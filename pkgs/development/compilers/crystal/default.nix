@@ -237,7 +237,7 @@ let
 
         installShellCompletion --cmd ${finalAttrs.meta.mainProgram} etc/completion.*
 
-        installManPage man/crystal.1
+        installManPage man/crystal-*.1
 
         install -Dm644 -t $out/share/licenses/crystal LICENSE README.md
 
