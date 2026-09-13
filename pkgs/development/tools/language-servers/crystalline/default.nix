@@ -8,12 +8,12 @@
 }:
 
 let
-  version = "0.18.0";
+  version = "0.19.0";
   src = fetchFromGitHub {
     owner = "elbywan";
     repo = "crystalline";
-    tag = "v${version}";
-    hash = "sha256-Z5qVm1ovhMUccS9KSp8i7UowxxgEr9OvnJRYREaNmnM=";
+    rev = "d8e8cacf8a8843a722200900e3fb4b090deb51fc";
+    hash = "sha256-GI0AlTMol4RUaD9TEV4iewnsOYt9nWUCNWGoHXgzW3c=";
   };
 in
 crystal.buildCrystalPackage {
@@ -31,7 +31,7 @@ crystal.buildCrystalPackage {
   env.LLVM_CONFIG = lib.getExe' (lib.getDev llvmPackages.llvm) "llvm-config";
 
   preConfigure = ''
-    substituteInPlace "./src/crystalline/main.cr" \
+    substituteInPlace "./src/crystalline/version.cr" \
       --replace-fail '`shards version #{__DIR__}`' '"${version}"' \
       --replace-fail 'system("git rev-parse --short HEAD || echo unknown").stringify' '"${src.rev}"'
   '';
