@@ -14,13 +14,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "profile-sync-daemon";
-  version = "7.04";
+  version = "8.0";
 
   src = fetchFromGitHub {
     owner = "graysky2";
     repo = "profile-sync-daemon";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-G2w5V9Eq19Jjx7PZcKH8bBZ3tOoghYaPQyMjlwFkARY=";
+    hash = "sha256-J1O7pXV8p0ho8uqws/AjrTTY5BB8jme3lVsngmh5TTA=";
   };
 
   installPhase = ''
