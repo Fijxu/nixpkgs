@@ -50,6 +50,8 @@
 
   obs-livesplit-one = callPackage ./obs-livesplit-one { };
 
+  obs-localvocal = qt6Packages.callPackage ./obs-localvocal { };
+
   obs-markdown = callPackage ./obs-markdown.nix { };
 
   obs-media-controls = qt6Packages.callPackage ./obs-media-controls { };
