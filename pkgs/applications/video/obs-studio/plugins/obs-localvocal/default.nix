@@ -12,8 +12,11 @@
   curl,
   onnxruntime,
   whisper-cpp,
+  whisper-cpp-vulkan,
   ctranslate2,
   sentencepiece,
+  vulkan-loader,
+  acceleration ? "nvidia",
 }:
 
 # obs-localvocal normally vendors (via FetchContent/ExternalProject) Whisper.cpp,
@@ -22,6 +25,15 @@
 # access at build time, which Nix forbids, so every dependency that nixpkgs already
 # packages is pulled in through the upstream USE_SYSTEM_* switches instead, and the
 # optional WebVTT embedding (the only remaining network/vendored piece) is disabled.
+
+let
+  nvidiaAccel = acceleration == "nvidia";
+  # With USE_SYSTEM_WHISPERCPP the plugin links nixpkgs' whisper-cpp directly, so the
+  # accelerator really comes from that package. For "nvidia" we link the Vulkan build
+  # (works on NVIDIA GPUs through Vulkan) - the CUDA build of whisper.cpp is far too
+  # slow and pulls in the whole CUDA toolkit, so Vulkan is preferred.
+  whisper = if nvidiaAccel then whisper-cpp-vulkan else whisper-cpp;
+in
 stdenv.mkDerivation (finalAttrs: {
   pname = "obs-localvocal";
   version = "0.6.2";
@@ -37,8 +49,8 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   # Used by cmake/linux/defaults.cmake and BuildWhispercpp.cmake to select the
-  # default CPU backend ("generic"); also emitted into CPack filenames.
-  ACCELERATION = "generic";
+  # acceleration backend (also emitted into CPack filenames).
+  ACCELERATION = acceleration;
 
   nativeBuildInputs = [
     cmake
@@ -53,9 +65,12 @@ stdenv.mkDerivation (finalAttrs: {
     icu
     curl
     onnxruntime
-    whisper-cpp
+    whisper
     ctranslate2
     sentencepiece
+  ]
+  ++ lib.optionals nvidiaAccel [
+    vulkan-loader
   ];
 
   cmakeFlags = [
@@ -89,6 +104,11 @@ stdenv.mkDerivation (finalAttrs: {
       Real-time, local speech-to-text and translation for OBS Studio using
       Whisper.cpp, Silero VAD and CTranslate2. Runs fully offline - no audio
       ever leaves the machine.
+
+      When built with acceleration = "nvidia" (the default), the Vulkan
+      Whisper.cpp backend is enabled so transcription runs on a compatible
+      GPU (works on NVIDIA hardware through Vulkan). Use acceleration =
+      "generic" for a CPU-only build.
     '';
     license = lib.licenses.gpl2Only;
     maintainers = with lib.maintainers; [ ];
