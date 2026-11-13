@@ -2,8 +2,14 @@
   lib,
   stdenv,
   fetchFromGitHub,
-  util-linux,
   coreutils,
+  findutils,
+  fuse3,
+  fuse-overlayfs,
+  glib,
+  kmod,
+  rsync,
+  systemd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -20,13 +26,16 @@ stdenv.mkDerivation (finalAttrs: {
   installPhase = ''
     PREFIX=\"\" DESTDIR=$out make install
     substituteInPlace $out/bin/profile-sync-daemon \
-      --replace "/usr/" "$out/" \
-      --replace "sudo " "/run/wrappers/bin/sudo "
+    --replace "PATH=\$PATH:/sbin" \
+    "PATH=\$PATH:$out:${coreutils}/bin:${findutils}/bin:${fuse3}/bin:${fuse-overlayfs}/bin:${glib}/bin:${kmod}/bin:${rsync}/bin:${systemd}/bin" \
+    --replace "/usr/" "$out/" \
+    --replace "sudo " "/run/wrappers/bin/sudo "
     # $HOME detection fails (and is unnecessary)
     sed -i '/^HOME/d' $out/bin/profile-sync-daemon
-    substituteInPlace $out/bin/psd-overlay-helper \
-      --replace "PATH=/usr/bin:/bin" "PATH=${util-linux.bin}/bin:${coreutils}/bin" \
-      --replace "sudo " "/run/wrappers/bin/sudo "
+    substituteInPlace $out/bin/psd-suspend-sync \
+    --replace "/usr/bin" "$out/bin" \
+    --replace "gdbus monitor" "${glib}/bin/gdbus monitor" \
+    --replace "systemd-inhibit" "${systemd}/bin/systemd-inhibit"
   '';
 
   meta = {
